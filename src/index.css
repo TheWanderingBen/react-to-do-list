@@ -1,0 +1,122 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+
+  color-scheme: light dark;
+  color: hsla(0, 0%, 100%, 0.87);
+  background-color: hsl(0, 0%, 14%);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+} */
+
+.to-do-list {
+  font-family: Arial, Helvetica, sans-serif;
+  text-align: center;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.to-do-list h1 {
+  font-size: 4rem;
+}
+
+.to-do-list button {
+  font-size: 1.7rem;
+  font-weight: bold;
+  padding: 10px 20px;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.5s ease;
+  margin-left: 10px;
+}
+
+.add-button {
+  background-color: hsl(191, 47%, 54%);
+}
+
+.add-button:hover {
+  background-color: hsl(191, 47%, 44%);
+}
+
+.add-button {
+  background-color: hsl(191, 47%, 44%);
+}
+
+.delete-button {
+  background-color: hsl(350, 47%, 54%);
+}
+
+.delete-button:hover {
+  background-color: hsl(350, 47%, 44%);
+}
+
+.move-button {
+  background-color: hsl(318, 47%, 54%);
+}
+
+.move-button:hover {
+  background-color: hsl(318, 47%, 44%);
+}
+
+.move-button:disabled {
+  background-color: hsla(318, 47%, 44%, 50%);
+  color:hsla(0, 0%, 100%, 0.5)
+}
+
+.to-do-list input[type="text"] {
+  font-size: 1.6rem;
+  padding: 10px;
+  border: 2px solid hsla(0, 0%, 80%, 0.5);
+  border-radius: 5px;
+  color:hsl(0, 0%, 50%)
+}
+
+.to-do-list ol {
+  padding: 0;
+}
+
+.to-do-list li {
+  font-size: 2rem;
+  font-weight: bold;
+  padding: 15px;
+  margin-bottom: 10px;
+  border: 3px solid hsla(0, 0%, 80%, 0.75);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.to-do-list .text {
+  flex: 1;
+}
+
+.to-do-list .delete-button, .to-do-list .move-button {
+  padding: 8px 12px;
+  font-size: 1.4rem;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  /* a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  } */
+}
