@@ -97,6 +97,17 @@ a:hover {
   border-radius: 5px;
   display: flex;
   align-items: center;
+  cursor: move; /* fallback if grab cursor is unsupported */
+  cursor: grab;
+  cursor: -moz-grab;
+  cursor: -webkit-grab;
+  background-color: hsl(0, 0%, 14%);
+}
+
+.to-do-list li:active {
+  cursor: grabbing;
+  cursor: -moz-grabbing;
+  cursor: -webkit-grabbing;
 }
 
 .to-do-list .text {
@@ -111,6 +122,10 @@ a:hover {
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
+    background-color: #ffffff;
+  }
+
+  .to-do-list li {
     background-color: #ffffff;
   }
   /* a:hover {

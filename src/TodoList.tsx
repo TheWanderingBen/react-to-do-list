@@ -193,12 +193,15 @@ function TodoList() {
         </div>
         <ol>
             {tasks.map((task, index) => 
-                <li key={index}>
+                <li key={index} draggable="true">
+                    <div className="drag-indicator">
+                        &#8801;
+                    </div>
                     <span className="text">{task.name}</span>
                     <button 
                         className="delete-button" 
                         onClick={() => deleteTask(task)}>
-                        Delete
+                        X
                     </button>
                     <button 
                         className="move-button" 
