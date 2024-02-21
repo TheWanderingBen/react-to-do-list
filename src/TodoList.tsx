@@ -101,75 +101,77 @@ function TodoList() {
     }
 
     async function handleOnDragEnd(result: DropResult)  {
-        // if (result.destination && result.source.index !== result.destination.index) {
-        //     const movedTask : Task = tasks[result.source.index];
-        //     const destinationTask : Task = tasks[result.destination.index];
-        //     if (movedTask.prev !== "") {
-        //         const prevTask : Task = tasks.find(t => Number(t.id) == Number(movedTask.prev)) as Task;
-        //         await setDoc(doc(db, "tasks", `${prevTask.id}`), {
-        //             id: prevTask.id,
-        //             name: prevTask.name,
-        //             prev: prevTask.prev,
-        //             next: movedTask.next
-        //         });
-        //     }
-        //     if (movedTask.next !== "") {
-        //         const nextTask : Task = tasks.find(t => Number(t.id) == Number(movedTask.next)) as Task;
-        //         await setDoc(doc(db, "tasks", `${nextTask.id}`), {
-        //             id: nextTask.id,
-        //             name: nextTask.name,
-        //             prev: movedTask.prev,
-        //             next: nextTask.next
-        //         });
-        //     }
-        //     if (result.source.index < result.destination.index) {
-        //         await setDoc(doc(db, "tasks", `${destinationTask.id}`), {
-        //             id: destinationTask.id,
-        //             name: destinationTask.name,
-        //             prev: destinationTask.prev,
-        //             next: movedTask.id
-        //         });
-        //         await setDoc(doc(db, "tasks", `${movedTask.id}`), {
-        //             id: movedTask.id,
-        //             name: movedTask.name,
-        //             prev: destinationTask.id,
-        //             next: destinationTask.next
-        //         });
-        //         if (destinationTask.next !== "") {
-        //             const nextTask : Task = tasks.find(t => Number(t.id) == Number(destinationTask.next)) as Task;
-        //             await setDoc(doc(db, "tasks", `${nextTask.id}`), {
-        //                 id: nextTask.id,
-        //                 name: nextTask.name,
-        //                 prev: movedTask.id,
-        //                 next: nextTask.next
-        //             });
-        //         }
-        //     } else {
-        //         if (destinationTask.prev !== "") {
-        //             const prevTask : Task = tasks.find(t => Number(t.id) == Number(destinationTask.prev)) as Task;
-        //             await setDoc(doc(db, "tasks", `${prevTask.id}`), {
-        //                 id: prevTask.id,
-        //                 name: prevTask.name,
-        //                 prev: prevTask.prev,
-        //                 next: movedTask.id
-        //             });
-        //         }  
-        //         await setDoc(doc(db, "tasks", `${movedTask.id}`), {
-        //             id: movedTask.id,
-        //             name: movedTask.name,
-        //             prev: destinationTask.prev,
-        //             next: destinationTask.id
-        //         });
-        //         await setDoc(doc(db, "tasks", `${destinationTask.id}`), {
-        //             id: destinationTask.id,
-        //             name: destinationTask.name,
-        //             prev: movedTask.id,
-        //             next: destinationTask.next
-        //         });              
-        //     }
-        // 
-        //     fetchAndSetTasks();            
-        // }
+        if (result.destination && result.source.index !== result.destination.index) {
+            const movedTask : Task = tasks[result.source.index];
+            const destinationTask : Task = tasks[result.destination.index];
+            if (movedTask.prev !== "") {
+                const prevTask : Task = tasks.find(t => Number(t.id) == Number(movedTask.prev)) as Task;
+                await setDoc(doc(db, "tasks", `${prevTask.id}`), {
+                    id: prevTask.id,
+                    name: prevTask.name,
+                    prev: prevTask.prev,
+                    next: movedTask.next
+                });
+                prevTask.next = movedTask.next;
+            }
+            if (movedTask.next !== "") {
+                const nextTask : Task = tasks.find(t => Number(t.id) == Number(movedTask.next)) as Task;
+                await setDoc(doc(db, "tasks", `${nextTask.id}`), {
+                    id: nextTask.id,
+                    name: nextTask.name,
+                    prev: movedTask.prev,
+                    next: nextTask.next
+                });
+                nextTask.prev = movedTask.prev;
+            }
+            if (result.source.index < result.destination.index) {
+                await setDoc(doc(db, "tasks", `${destinationTask.id}`), {
+                    id: destinationTask.id,
+                    name: destinationTask.name,
+                    prev: destinationTask.prev,
+                    next: movedTask.id
+                });
+                await setDoc(doc(db, "tasks", `${movedTask.id}`), {
+                    id: movedTask.id,
+                    name: movedTask.name,
+                    prev: destinationTask.id,
+                    next: destinationTask.next
+                });
+                if (destinationTask.next !== "") {
+                    const nextTask : Task = tasks.find(t => Number(t.id) == Number(destinationTask.next)) as Task;
+                    await setDoc(doc(db, "tasks", `${nextTask.id}`), {
+                        id: nextTask.id,
+                        name: nextTask.name,
+                        prev: movedTask.id,
+                        next: nextTask.next
+                    });
+                }
+            } else {
+                if (destinationTask.prev !== "") {
+                    const prevTask : Task = tasks.find(t => Number(t.id) == Number(destinationTask.prev)) as Task;
+                    await setDoc(doc(db, "tasks", `${prevTask.id}`), {
+                        id: prevTask.id,
+                        name: prevTask.name,
+                        prev: prevTask.prev,
+                        next: movedTask.id
+                    });
+                }  
+                await setDoc(doc(db, "tasks", `${movedTask.id}`), {
+                    id: movedTask.id,
+                    name: movedTask.name,
+                    prev: destinationTask.prev,
+                    next: destinationTask.id
+                });
+                await setDoc(doc(db, "tasks", `${destinationTask.id}`), {
+                    id: destinationTask.id,
+                    name: destinationTask.name,
+                    prev: movedTask.id,
+                    next: destinationTask.next
+                });              
+            }
+
+            fetchAndSetTasks();            
+        }
     }    
 
     return(<div className="to-do-list">
