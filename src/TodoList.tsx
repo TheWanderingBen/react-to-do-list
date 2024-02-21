@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { db } from "./Firebase";
 import { collection, deleteDoc, doc, getDocs, setDoc } from "firebase/firestore";
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 
 type Task = {
     id: string, name: string, prev: string, next: string
@@ -77,7 +78,6 @@ function TodoList() {
     }
 
     async function deleteTask(task : Task) {
-
         if (task.prev !== "") {
             const prevTask : Task = tasks.find(t => Number(t.id) === Number(task.prev)) as Task;
             await setDoc(doc(db, "tasks", `${task.prev}`), {
@@ -100,81 +100,77 @@ function TodoList() {
         fetchAndSetTasks();
     }
 
-    async function moveTaskUp(task : Task) {
-        if (task.prev !== "") {
-            const prevTask : Task = tasks.find(t => Number(t.id) == Number(task.prev)) as Task;
-            if (prevTask.prev !== "") {
-                const prevPrevTask : Task = tasks.find(t => Number(t.id) == Number(prevTask.prev)) as Task;
-                await setDoc(doc(db, "tasks", `${prevPrevTask.id}`), {
-                    id: prevPrevTask.id,
-                    name: prevPrevTask.name,
-                    prev: prevPrevTask.prev,
-                    next: task.id
-                });
-            }
-            await setDoc(doc(db, "tasks", `${task.id}`), {
-                id: task.id,
-                name: task.name,
-                prev: prevTask.prev,
-                next: prevTask.id
-            });
-            await setDoc(doc(db, "tasks", `${prevTask.id}`), {
-                id: prevTask.id,
-                name: prevTask.name,
-                prev: task.id,
-                next: task.next
-            });
-            if (task.next !== "") {
-                const nextTask : Task = tasks.find(t => Number(t.id) == Number(task.next)) as Task;
-                await setDoc(doc(db, "tasks", `${nextTask.id}`), {
-                    id: nextTask.id,
-                    name: nextTask.name,
-                    prev: prevTask.id,
-                    next: nextTask.next
-                });
-            }
-            
-            fetchAndSetTasks();
-        }
-    }
-
-    async function moveTaskDown(task : Task) {
-        if (task.next !== "") {
-            const nextTask : Task = tasks.find(t => Number(t.id) == Number(task.next)) as Task;
-            if (task.prev !== "") {
-                const prevTask : Task = tasks.find(t => Number(t.id) == Number(task.prev)) as Task;
-                await setDoc(doc(db, "tasks", `${prevTask.id}`), {
-                    id: prevTask.id,
-                    name: prevTask.name,
-                    prev: prevTask.prev,
-                    next: task.next
-                });
-            }
-            await setDoc(doc(db, "tasks", `${nextTask.id}`), {
-                id: nextTask.id,
-                name: nextTask.name,
-                prev: task.prev,
-                next: task.id
-            });
-            await setDoc(doc(db, "tasks", `${task.id}`), {
-                id: task.id,
-                name: task.name,
-                prev: nextTask.id,
-                next: nextTask.next
-            });
-            if (nextTask.next !== "") {
-                const nextNextTask : Task = tasks.find(t => Number(t.id) == Number(nextTask.next)) as Task;
-                await setDoc(doc(db, "tasks", `${nextNextTask.id}`), {
-                    id: nextNextTask.id,
-                    name: nextNextTask.name,
-                    prev: task.id,
-                    next: nextNextTask.next
-                });
-            }
-
-            fetchAndSetTasks();
-        }
-    }
+    async function handleOnDragEnd(result: DropResult)  {
+        // if (result.destination && result.source.index !== result.destination.index) {
+        //     const movedTask : Task = tasks[result.source.index];
+        //     const destinationTask : Task = tasks[result.destination.index];
+        //     if (movedTask.prev !== "") {
+        //         const prevTask : Task = tasks.find(t => Number(t.id) == Number(movedTask.prev)) as Task;
+        //         await setDoc(doc(db, "tasks", `${prevTask.id}`), {
+        //             id: prevTask.id,
+        //             name: prevTask.name,
+        //             prev: prevTask.prev,
+        //             next: movedTask.next
+        //         });
+        //     }
+        //     if (movedTask.next !== "") {
+        //         const nextTask : Task = tasks.find(t => Number(t.id) == Number(movedTask.next)) as Task;
+        //         await setDoc(doc(db, "tasks", `${nextTask.id}`), {
+        //             id: nextTask.id,
+        //             name: nextTask.name,
+        //             prev: movedTask.prev,
+        //             next: nextTask.next
+        //         });
+        //     }
+        //     if (result.source.index < result.destination.index) {
+        //         await setDoc(doc(db, "tasks", `${destinationTask.id}`), {
+        //             id: destinationTask.id,
+        //             name: destinationTask.name,
+        //             prev: destinationTask.prev,
+        //             next: movedTask.id
+        //         });
+        //         await setDoc(doc(db, "tasks", `${movedTask.id}`), {
+        //             id: movedTask.id,
+        //             name: movedTask.name,
+        //             prev: destinationTask.id,
+        //             next: destinationTask.next
+        //         });
+        //         if (destinationTask.next !== "") {
+        //             const nextTask : Task = tasks.find(t => Number(t.id) == Number(destinationTask.next)) as Task;
+        //             await setDoc(doc(db, "tasks", `${nextTask.id}`), {
+        //                 id: nextTask.id,
+        //                 name: nextTask.name,
+        //                 prev: movedTask.id,
+        //                 next: nextTask.next
+        //             });
+        //         }
+        //     } else {
+        //         if (destinationTask.prev !== "") {
+        //             const prevTask : Task = tasks.find(t => Number(t.id) == Number(destinationTask.prev)) as Task;
+        //             await setDoc(doc(db, "tasks", `${prevTask.id}`), {
+        //                 id: prevTask.id,
+        //                 name: prevTask.name,
+        //                 prev: prevTask.prev,
+        //                 next: movedTask.id
+        //             });
+        //         }  
+        //         await setDoc(doc(db, "tasks", `${movedTask.id}`), {
+        //             id: movedTask.id,
+        //             name: movedTask.name,
+        //             prev: destinationTask.prev,
+        //             next: destinationTask.id
+        //         });
+        //         await setDoc(doc(db, "tasks", `${destinationTask.id}`), {
+        //             id: destinationTask.id,
+        //             name: destinationTask.name,
+        //             prev: movedTask.id,
+        //             next: destinationTask.next
+        //         });              
+        //     }
+        // 
+        //     fetchAndSetTasks();            
+        // }
+    }    
 
     return(<div className="to-do-list">
         <h1>My Tasks</h1>
@@ -191,33 +187,34 @@ function TodoList() {
                     Add
             </button>
         </div>
-        <ol>
-            {tasks.map((task, index) => 
-                <li key={index} draggable="true">
-                    <div className="drag-indicator">
-                        &#8801;
-                    </div>
-                    <span className="text">{task.name}</span>
-                    <button 
-                        className="delete-button" 
-                        onClick={() => deleteTask(task)}>
-                        X
-                    </button>
-                    <button 
-                        className="move-button" 
-                        onClick={() => moveTaskUp(task)}
-                        disabled={index === 0}>
-                        ☝️
-                    </button>
-                    <button 
-                        className="move-button" 
-                        onClick={() => moveTaskDown(task)}
-                        disabled={index === tasks.length - 1}>
-                        👇
-                    </button>
-                </li>
-            )}
-        </ol>
+        <DragDropContext onDragEnd={handleOnDragEnd}>
+            <Droppable droppableId="tasks">
+                {(provided) =>
+                    <ol className="tasks" {...provided.droppableProps} ref={provided.innerRef}>
+                        {tasks.map((task, index) => {
+                            return (
+                                <Draggable key={task.id} draggableId={task.id} index={index}>
+                                {(provided) => (
+                                    <li ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                                        <div className="drag-indicator">
+                                            &#8801;
+                                        </div>
+                                        <span className="text">{task.name}</span>
+                                        <button 
+                                            className="delete-button" 
+                                            onClick={() => deleteTask(task)}>
+                                            X
+                                        </button>
+                                    </li>
+                                )}
+                                </Draggable>
+                            )}
+                        )}
+                        {provided.placeholder}
+                    </ol>
+                }
+            </Droppable>
+        </DragDropContext>
     </div>)
 }
 
