@@ -24,7 +24,6 @@ a:hover {
   font-family: Arial, Helvetica, sans-serif;
   text-align: center;
   max-width: 500px;
-  min-width: 400px;
   margin: 0 auto;
 }
 
@@ -103,33 +102,16 @@ a:hover {
   cursor: -moz-grab;
   cursor: -webkit-grab;
   background-color: hsl(0, 0%, 14%);
-  transition: margin-top 0.2s;
+}
+
+.to-do-list li:active {
+  cursor: grabbing;
+  cursor: -moz-grabbing;
+  cursor: -webkit-grabbing;
 }
 
 .to-do-list .text {
   flex: 1;
-}
-
-#fake {
-  border: 3px solid hsla(0, 0%, 0%, 0);
-  background-color: hsla(0, 0%, 0%, 0);
-}
-
-.to-do-list .moving {
-  cursor: grabbing;
-  cursor: -moz-grabbing;
-  cursor: -webkit-grabbing;
-  position: absolute;
-  min-width: 464px; /*this feels very hacky, but I don't know how to keep it the same size otherwise -- will change if .to-do-list width changes*/
-}
-
-.to-do-list .below-moving-first {
-  transition: margin-top 0s; /*take the first element below the one we dragged and instantly give it a margin*/
-  margin-top: 102px; /*this number also feels hacky, but again, not sure how to improve -- will change if text size changes*/
-}
-
-.to-do-list .below-moving {
-  margin-top: 102px;
 }
 
 .to-do-list .delete-button, .to-do-list .move-button {

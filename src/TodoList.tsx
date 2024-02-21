@@ -9,11 +9,7 @@ type Task = {
 function TodoList() {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [newTask, setNewTask] = useState("");
-    let currentX = 0;
-    let currentY = 0;
-    let currentTarget : HTMLElement;
-    let elementBelowDrag : Element;
-
+    
     useEffect(() => {
         fetchAndSetTasks();
     }, [])
@@ -180,60 +176,6 @@ function TodoList() {
         }
     }
 
-    function addPaddingBelowTask(task : Task) {
-        if (task.next !== "") {
-            const element = document.getElementById(task.next);
-            if (element) {
-                elementBelowDrag = element;
-                elementBelowDrag.className = "below-moving-first"; 
-            }
-        }
-    }
-
-    function addPaddingToElement(element : Element) {
-        elementBelowDrag.className = "";
-        elementBelowDrag = element;
-        elementBelowDrag.className = "below-moving"; 
-    }
-
-    function dragStart(e: React.DragEvent<HTMLLIElement>, task : Task) {
-        console.log("picked up: " + task.id);
-        currentX = e.clientX;
-        currentY = e.clientY;
-        e.currentTarget.style.top = (e.currentTarget.offsetTop) + "px";
-        e.currentTarget.style.left = (e.currentTarget.offsetLeft) + "px";
-        e.currentTarget.className = "moving";
-        currentTarget = e.currentTarget;
-        addPaddingBelowTask(task);
-    }
-
-    function dragOver(e: React.DragEvent<HTMLLIElement>) {
-        e.preventDefault(); //this prevents the element moving back to where it was
-        document.elementsFromPoint(e.clientX, e.clientY).forEach((element) => {
-            if (element.id != elementBelowDrag.id && element.id != e.currentTarget.id && element.localName === "li") {
-                addPaddingToElement(element);
-            }
-        });
-    }
-
-    function drag(e: React.DragEvent<HTMLLIElement>) {
-        e.preventDefault();
-        const xMove = currentX - e.clientX;
-        const yMove = currentY - e.clientY;
-        currentX = e.clientX;
-        currentY = e.clientY;
-        e.currentTarget.style.top = (e.currentTarget.offsetTop - yMove) + "px";
-        e.currentTarget.style.left = (e.currentTarget.offsetLeft - xMove) + "px";
-        
-    }
-
-    function dragEnd(e: React.DragEvent<HTMLLIElement>) {
-        e.currentTarget.style.top = e.currentTarget.offsetTop + "px";
-        e.currentTarget.style.left = e.currentTarget.offsetLeft + "px";
-        elementBelowDrag.className = ""; 
-        e.currentTarget.className = "";
-    }
-
     return(<div className="to-do-list">
         <h1>My Tasks</h1>
         <div>
@@ -251,11 +193,7 @@ function TodoList() {
         </div>
         <ol>
             {tasks.map((task, index) => 
-                <li key={index} draggable="true" id={task.id} 
-                    onDragStart={(e) => dragStart(e, task)}
-                    onDragOver={dragOver}
-                    onDrag={drag}
-                    onDragEnd={dragEnd}>
+                <li key={index} draggable="true">
                     <div className="drag-indicator">
                         &#8801;
                     </div>
@@ -279,9 +217,6 @@ function TodoList() {
                     </button>
                 </li>
             )}
-            <li draggable="true" id="fake" 
-                onDragOver={dragOver}>
-            </li>
         </ol>
     </div>)
 }
