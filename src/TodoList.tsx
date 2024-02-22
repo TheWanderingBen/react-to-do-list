@@ -49,130 +49,92 @@ function TodoList() {
 
     async function addTask() {
         if (newTask.trim() !== "") {
+            const tasksToUpdate : Task[] = [];
             const newID : string = Date.now().toString();
             if (tasks.length > 0) {
-                const lastTask = tasks[tasks.length - 1];
-                await setDoc(doc(db, "tasks", `${newID}`), {
-                    id: newID,
-                    name: newTask,
-                    prev: lastTask.id,
-                    next: ""
-                });
-                await setDoc(doc(db, "tasks", `${lastTask.id}`), {
-                    id: lastTask.id,
-                    name: lastTask.name,
-                    prev: lastTask.prev,
-                    next: newID
-                });
+                const lastTask : Task = tasks[tasks.length - 1];
+                const addedTask : Task = { id: newID, name: newTask, prev: lastTask.id, next: "" };
+                lastTask.next = newID;
+                tasksToUpdate.push(lastTask, addedTask);
             } else {
-                await setDoc(doc(db, "tasks", `${newID}`), {
-                    id: newID,
-                    name: newTask,
-                    prev: "",
-                    next: ""
-                });
+                const addedTask : Task = { id: newID, name: newTask, prev: "", next: "" };
+                tasksToUpdate.push(addedTask);
             }
+            updateDocsWithTasks(tasksToUpdate);
             setNewTask("");
             fetchAndSetTasks();
         }
     }
 
     async function deleteTask(task : Task) {
+        const tasksToUpdate : Task[] = [];
         if (task.prev !== "") {
             const prevTask : Task = tasks.find(t => Number(t.id) === Number(task.prev)) as Task;
-            await setDoc(doc(db, "tasks", `${task.prev}`), {
-                id: task.prev,
-                name: prevTask.name, //do I have to update this?? If I don't, I don't have to run find here
-                prev: prevTask.prev,
-                next: task.next
-            });
+            prevTask.next = task.next;
+            tasksToUpdate.push(prevTask);
         }
         if (task.next !== "") {
             const nextTask : Task = tasks.find(t => Number(t.id) === Number(task.next)) as Task;
-            await setDoc(doc(db, "tasks", `${task.next}`), {
-                id: task.next,
-                name: nextTask.name, //do I have to update this?? If I don't, I don't have to run find here
-                prev: task.prev,
-                next: nextTask.next
-            });
+            nextTask.prev = task.prev;
+            tasksToUpdate.push(nextTask);
         }
+        updateDocsWithTasks(tasksToUpdate);    
         await deleteDoc(doc(db, "tasks", `${task.id}`));
         fetchAndSetTasks();
     }
 
-    async function handleOnDragEnd(result: DropResult)  {
+    function handleOnDragEnd(result: DropResult)  {
         if (result.destination && result.source.index !== result.destination.index) {
             const movedTask : Task = tasks[result.source.index];
             const destinationTask : Task = tasks[result.destination.index];
+            let tasksToUpdate : Task[] = [ movedTask, destinationTask ];
             if (movedTask.prev !== "") {
                 const prevTask : Task = tasks.find(t => Number(t.id) == Number(movedTask.prev)) as Task;
-                await setDoc(doc(db, "tasks", `${prevTask.id}`), {
-                    id: prevTask.id,
-                    name: prevTask.name,
-                    prev: prevTask.prev,
-                    next: movedTask.next
-                });
                 prevTask.next = movedTask.next;
+                tasksToUpdate.push(prevTask);
             }
             if (movedTask.next !== "") {
                 const nextTask : Task = tasks.find(t => Number(t.id) == Number(movedTask.next)) as Task;
-                await setDoc(doc(db, "tasks", `${nextTask.id}`), {
-                    id: nextTask.id,
-                    name: nextTask.name,
-                    prev: movedTask.prev,
-                    next: nextTask.next
-                });
                 nextTask.prev = movedTask.prev;
+                tasksToUpdate.push(nextTask);
             }
             if (result.source.index < result.destination.index) {
-                await setDoc(doc(db, "tasks", `${destinationTask.id}`), {
-                    id: destinationTask.id,
-                    name: destinationTask.name,
-                    prev: destinationTask.prev,
-                    next: movedTask.id
-                });
-                await setDoc(doc(db, "tasks", `${movedTask.id}`), {
-                    id: movedTask.id,
-                    name: movedTask.name,
-                    prev: destinationTask.id,
-                    next: destinationTask.next
-                });
                 if (destinationTask.next !== "") {
                     const nextTask : Task = tasks.find(t => Number(t.id) == Number(destinationTask.next)) as Task;
-                    await setDoc(doc(db, "tasks", `${nextTask.id}`), {
-                        id: nextTask.id,
-                        name: nextTask.name,
-                        prev: movedTask.id,
-                        next: nextTask.next
-                    });
+                    nextTask.prev = movedTask.id;
+                    if (!tasksToUpdate.includes(nextTask))
+                        tasksToUpdate.push(nextTask);
                 }
+                movedTask.prev = destinationTask.id;
+                movedTask.next = destinationTask.next;
+                destinationTask.next = movedTask.id;
             } else {
                 if (destinationTask.prev !== "") {
                     const prevTask : Task = tasks.find(t => Number(t.id) == Number(destinationTask.prev)) as Task;
-                    await setDoc(doc(db, "tasks", `${prevTask.id}`), {
-                        id: prevTask.id,
-                        name: prevTask.name,
-                        prev: prevTask.prev,
-                        next: movedTask.id
-                    });
+                    prevTask.next = movedTask.id;
+                    if (!tasksToUpdate.includes(prevTask))
+                        tasksToUpdate.push(prevTask);
                 }  
-                await setDoc(doc(db, "tasks", `${movedTask.id}`), {
-                    id: movedTask.id,
-                    name: movedTask.name,
-                    prev: destinationTask.prev,
-                    next: destinationTask.id
-                });
-                await setDoc(doc(db, "tasks", `${destinationTask.id}`), {
-                    id: destinationTask.id,
-                    name: destinationTask.name,
-                    prev: movedTask.id,
-                    next: destinationTask.next
-                });              
+                movedTask.prev = destinationTask.prev;
+                movedTask.next = destinationTask.id;
+                destinationTask.prev = movedTask.id;            
             }
-
-            fetchAndSetTasks();            
+            
+            updateDocsWithTasks(tasksToUpdate);        
         }
     }    
+
+    function updateDocsWithTasks(tasksToUpdate: Task[]) {
+        tasksToUpdate.forEach(async task => {
+            await setDoc(doc(db, "tasks", `${task.id}`), {
+                id: task.id,
+                name: task.name,
+                prev: task.prev,
+                next: task.next
+            });
+        });
+        fetchAndSetTasks();
+    }
 
     return(<div className="to-do-list">
         <h1>My Tasks</h1>
