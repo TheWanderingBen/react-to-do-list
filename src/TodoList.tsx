@@ -90,7 +90,7 @@ function TodoList() {
         fetchAndSetTasks();
     }
 
-    function handleOnDragEnd(result: DropResult)  {
+    async function handleOnDragEnd(result: DropResult)  {
         if (result.destination && result.source.index !== result.destination.index) {
             const changingTasks = tasks;            
             const movedTask : Task = changingTasks[result.source.index];
@@ -129,7 +129,8 @@ function TodoList() {
             }
             
             orderAndSetTasks(changingTasks);
-            updateDocsWithTasks(tasksToUpdate).then(fetchAndSetTasks);
+            await updateDocsWithTasks(tasksToUpdate);
+            fetchAndSetTasks();
         }
     }    
 
