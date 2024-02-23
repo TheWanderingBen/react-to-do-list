@@ -136,7 +136,7 @@ function TodoList() {
 
     async function updateDocsWithTasks(tasksToUpdate: Task[]) {
         const batch = writeBatch(db);
-        for (let i : number = 0; i < tasks.length; ++i) {
+        for (let i : number = 0; i < tasksToUpdate.length; ++i) {
             const task : Task = tasksToUpdate[i];
             const taskRef = doc(db, "tasks", `${task.id}`);
             batch.set(taskRef, { id: task.id, 
