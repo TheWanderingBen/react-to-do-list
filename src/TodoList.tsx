@@ -60,11 +60,13 @@ function TodoList() {
                 const addedTask : Task = { id: newID, name: newTask, prev: lastTask.id, next: "" };
                 lastTask.next = newID;
                 tasksToUpdate.push(lastTask, addedTask);
+                changingTasks.push(addedTask);
             } else {
                 const addedTask : Task = { id: newID, name: newTask, prev: "", next: "" };
                 tasksToUpdate.push(addedTask);
+                changingTasks.push(addedTask);
             }
-            setTasks([...changingTasks]);
+            orderAndSetTasks(changingTasks);
             await updateDocsWithTasks(tasksToUpdate);
             setNewTask("");
             fetchAndSetTasks();
@@ -84,8 +86,9 @@ function TodoList() {
             nextTask.prev = task.prev;
             tasksToUpdate.push(nextTask);
         }
-        setTasks([...changingTasks]);
-        updateDocsWithTasks(tasksToUpdate);    
+        changingTasks.splice(changingTasks.indexOf(task), 1);
+        orderAndSetTasks(changingTasks);
+        await updateDocsWithTasks(tasksToUpdate);    
         await deleteDoc(doc(db, "tasks", `${task.id}`));
         fetchAndSetTasks();
     }
