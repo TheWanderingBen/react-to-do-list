@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { db } from "./Firebase";
-import { collection, deleteDoc, doc, getDocs, setDoc } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDocs, writeBatch } from "firebase/firestore";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 
 type Task = {
@@ -25,16 +25,19 @@ function TodoList() {
                 next: doc.data()["next"] as string };
         });
 
-        let orderedTasks : Task[] = [];
-        if (dbTasks.length > 0)
-        {
+        orderAndSetTasks(dbTasks);
+    }
+    
+    function orderAndSetTasks(dbTasks: Task[]) {
+        let orderedTasks: Task[] = [];
+        if (dbTasks.length > 0) {
             orderedTasks[0] = dbTasks.find(t => t.prev === "") as Task;
             let nextTaskID = orderedTasks[0].next;
             let index = 1;
             while (nextTaskID !== "") {
                 //seems like a better solution exists here that isn't find, but I'm sick!
                 //Also under why this comparison was failing before casting both sides to number — they're both strings!
-                orderedTasks[index] = dbTasks.find(t => Number(t.id) === Number(nextTaskID)) as Task; 
+                orderedTasks[index] = dbTasks.find(t => Number(t.id) === Number(nextTaskID)) as Task;
                 nextTaskID = orderedTasks[index].next;
                 ++index;
             }
@@ -42,17 +45,18 @@ function TodoList() {
 
         setTasks(orderedTasks);
     }
-    
+
     function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
         setNewTask(event.target.value);
     }
 
     async function addTask() {
         if (newTask.trim() !== "") {
+            const changingTasks = tasks;
             const tasksToUpdate : Task[] = [];
             const newID : string = Date.now().toString();
             if (tasks.length > 0) {
-                const lastTask : Task = tasks[tasks.length - 1];
+                const lastTask : Task = changingTasks[tasks.length - 1];
                 const addedTask : Task = { id: newID, name: newTask, prev: lastTask.id, next: "" };
                 lastTask.next = newID;
                 tasksToUpdate.push(lastTask, addedTask);
@@ -60,6 +64,7 @@ function TodoList() {
                 const addedTask : Task = { id: newID, name: newTask, prev: "", next: "" };
                 tasksToUpdate.push(addedTask);
             }
+            setTasks([...changingTasks]);
             updateDocsWithTasks(tasksToUpdate);
             setNewTask("");
             fetchAndSetTasks();
@@ -67,17 +72,19 @@ function TodoList() {
     }
 
     async function deleteTask(task : Task) {
+        const changingTasks = tasks;
         const tasksToUpdate : Task[] = [];
         if (task.prev !== "") {
-            const prevTask : Task = tasks.find(t => Number(t.id) === Number(task.prev)) as Task;
+            const prevTask : Task = changingTasks.find(t => Number(t.id) === Number(task.prev)) as Task;
             prevTask.next = task.next;
             tasksToUpdate.push(prevTask);
         }
         if (task.next !== "") {
-            const nextTask : Task = tasks.find(t => Number(t.id) === Number(task.next)) as Task;
+            const nextTask : Task = changingTasks.find(t => Number(t.id) === Number(task.next)) as Task;
             nextTask.prev = task.prev;
             tasksToUpdate.push(nextTask);
         }
+        setTasks([...changingTasks]);
         updateDocsWithTasks(tasksToUpdate);    
         await deleteDoc(doc(db, "tasks", `${task.id}`));
         fetchAndSetTasks();
@@ -85,22 +92,23 @@ function TodoList() {
 
     function handleOnDragEnd(result: DropResult)  {
         if (result.destination && result.source.index !== result.destination.index) {
-            const movedTask : Task = tasks[result.source.index];
-            const destinationTask : Task = tasks[result.destination.index];
+            const changingTasks = tasks;            
+            const movedTask : Task = changingTasks[result.source.index];
+            const destinationTask : Task = changingTasks[result.destination.index];
             let tasksToUpdate : Task[] = [ movedTask, destinationTask ];
             if (movedTask.prev !== "") {
-                const prevTask : Task = tasks.find(t => Number(t.id) == Number(movedTask.prev)) as Task;
+                const prevTask : Task = changingTasks.find(t => Number(t.id) == Number(movedTask.prev)) as Task;
                 prevTask.next = movedTask.next;
                 tasksToUpdate.push(prevTask);
             }
             if (movedTask.next !== "") {
-                const nextTask : Task = tasks.find(t => Number(t.id) == Number(movedTask.next)) as Task;
+                const nextTask : Task = changingTasks.find(t => Number(t.id) == Number(movedTask.next)) as Task;
                 nextTask.prev = movedTask.prev;
                 tasksToUpdate.push(nextTask);
             }
             if (result.source.index < result.destination.index) {
                 if (destinationTask.next !== "") {
-                    const nextTask : Task = tasks.find(t => Number(t.id) == Number(destinationTask.next)) as Task;
+                    const nextTask : Task = changingTasks.find(t => Number(t.id) == Number(destinationTask.next)) as Task;
                     nextTask.prev = movedTask.id;
                     if (!tasksToUpdate.includes(nextTask))
                         tasksToUpdate.push(nextTask);
@@ -110,7 +118,7 @@ function TodoList() {
                 destinationTask.next = movedTask.id;
             } else {
                 if (destinationTask.prev !== "") {
-                    const prevTask : Task = tasks.find(t => Number(t.id) == Number(destinationTask.prev)) as Task;
+                    const prevTask : Task = changingTasks.find(t => Number(t.id) == Number(destinationTask.prev)) as Task;
                     prevTask.next = movedTask.id;
                     if (!tasksToUpdate.includes(prevTask))
                         tasksToUpdate.push(prevTask);
@@ -120,20 +128,23 @@ function TodoList() {
                 destinationTask.prev = movedTask.id;            
             }
             
-            updateDocsWithTasks(tasksToUpdate);        
+            orderAndSetTasks(changingTasks);
+            updateDocsWithTasks(tasksToUpdate).then(fetchAndSetTasks);
         }
     }    
 
-    function updateDocsWithTasks(tasksToUpdate: Task[]) {
-        tasksToUpdate.forEach(async task => {
-            await setDoc(doc(db, "tasks", `${task.id}`), {
-                id: task.id,
-                name: task.name,
-                prev: task.prev,
-                next: task.next
-            });
-        });
-        fetchAndSetTasks();
+    async function updateDocsWithTasks(tasksToUpdate: Task[]) {
+        const batch = writeBatch(db);
+        for (let i : number = 0; i < tasks.length; ++i) {
+            const task : Task = tasksToUpdate[i];
+            const taskRef = doc(db, "tasks", `${task.id}`);
+            batch.set(taskRef, { id: task.id, 
+                                name: task.name,
+                                prev: task.prev,
+                                next: task.next});
+        }
+
+        return await batch.commit();
     }
 
     return(<div className="to-do-list">
