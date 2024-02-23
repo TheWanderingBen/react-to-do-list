@@ -9,7 +9,7 @@ type Task = {
 
 function TodoList() {
     const [tasks, setTasks] = useState<Task[]>([]);
-    const [newTask, setNewTask] = useState("");
+    const [newTask, setNewTask] = useState<string>("");
     
     useEffect(() => {
         fetchAndSetTasks();
