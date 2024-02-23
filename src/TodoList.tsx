@@ -65,7 +65,7 @@ function TodoList() {
                 tasksToUpdate.push(addedTask);
             }
             setTasks([...changingTasks]);
-            updateDocsWithTasks(tasksToUpdate);
+            await updateDocsWithTasks(tasksToUpdate);
             setNewTask("");
             fetchAndSetTasks();
         }
