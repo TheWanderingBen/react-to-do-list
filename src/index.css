@@ -87,8 +87,7 @@ a:hover {
   cursor: text;
 }
 
-.to-do-list input {
-  flex: 1;
+.to-do-list li input[type="text"] {
   margin-left: 10px;
 }
 
