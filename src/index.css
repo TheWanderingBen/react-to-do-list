@@ -74,6 +74,8 @@ a:hover {
 .move-button:disabled {
   background-color: hsla(318, 47%, 44%, 50%);
   color:hsla(0, 0%, 100%, 0.5)
+.add-parent {
+  display: flex;
 }
 
 .to-do-list input[type="text"] {
@@ -81,7 +83,8 @@ a:hover {
   padding: 10px;
   border: 2px solid hsla(0, 0%, 80%, 0.5);
   border-radius: 5px;
-  color:hsl(0, 0%, 50%)
+  color:hsl(0, 0%, 50%);
+  flex: 1;
 }
 
 .to-do-list ol {
