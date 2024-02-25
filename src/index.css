@@ -43,18 +43,6 @@ a:hover {
   margin-left: 10px;
 }
 
-.add-button {
-  background-color: hsl(191, 47%, 54%);
-}
-
-.add-button:hover {
-  background-color: hsl(191, 47%, 44%);
-}
-
-.add-button {
-  background-color: hsl(191, 47%, 44%);
-}
-
 .delete-button {
   background-color: hsl(350, 47%, 54%);
 }
@@ -63,17 +51,6 @@ a:hover {
   background-color: hsl(350, 47%, 44%);
 }
 
-.move-button {
-  background-color: hsl(318, 47%, 54%);
-}
-
-.move-button:hover {
-  background-color: hsl(318, 47%, 44%);
-}
-
-.move-button:disabled {
-  background-color: hsla(318, 47%, 44%, 50%);
-  color:hsla(0, 0%, 100%, 0.5)
 .add-parent {
   display: flex;
 }
