@@ -10,6 +10,9 @@ type Task = {
 function TodoList() {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [newTask, setNewTask] = useState<string>("");
+    const [editingTaskString, setEditingTaskString] = useState<string>("");
+    const [editingTask, setEditingTask] = useState<Task>();
+    const [isEditing, setIsEditing] = useState<boolean>(false);
     
     useEffect(() => {
         fetchAndSetTasks();
@@ -48,9 +51,11 @@ function TodoList() {
 
     function handleInputChange(event: React.ChangeEvent<HTMLInputElement>) {
         setNewTask(event.target.value);
+        setIsEditing(false);
     }
 
     async function addTask() {
+        setIsEditing(false);
         if (newTask.trim() !== "") {
             const changingTasks = tasks;
             const tasksToUpdate : Task[] = [];
@@ -74,6 +79,7 @@ function TodoList() {
     }
 
     async function deleteTask(task : Task) {
+        setIsEditing(false);
         const changingTasks = tasks;
         const tasksToUpdate : Task[] = [];
         if (task.prev !== "") {
@@ -94,6 +100,7 @@ function TodoList() {
     }
 
     async function handleOnDragEnd(result: DropResult)  {
+        setIsEditing(false);
         if (result.destination && result.source.index !== result.destination.index) {
             const changingTasks = tasks;            
             const movedTask : Task = changingTasks[result.source.index];
@@ -135,7 +142,32 @@ function TodoList() {
             await updateDocsWithTasks(tasksToUpdate);
             fetchAndSetTasks();
         }
-    }    
+    }  
+
+
+    function handleOnDragStart()  {
+        setIsEditing(false);
+    }
+
+    function editName(task : Task) {
+        setIsEditing(true);
+        setEditingTask(task);
+        setEditingTaskString(task.name);
+    }
+    
+    function handleEditInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+        setEditingTaskString(event.target.value);
+    }
+
+    async function handleEditKeyDown(event : React.KeyboardEvent<HTMLInputElement>) {
+        if (event.key === 'Enter') {
+            setIsEditing(false);
+            editingTask!.name = editingTaskString;
+            orderAndSetTasks([...tasks]);
+            await updateDocsWithTasks([editingTask as Task]);
+            fetchAndSetTasks();
+        }
+    };
 
     async function updateDocsWithTasks(tasksToUpdate: Task[]) {
         const batch = writeBatch(db);
@@ -164,9 +196,9 @@ function TodoList() {
                 className="add-button"
                 onClick={addTask}>
                     Add
-            </button>
-        </div>
-        <DragDropContext onDragEnd={handleOnDragEnd}>
+            </button>``
+        </div>``
+        <DragDropContext onDragEnd={handleOnDragEnd} onDragStart={handleOnDragStart}>
             <Droppable droppableId="tasks">
                 {(provided) =>
                     <ol className="tasks" {...provided.droppableProps} ref={provided.innerRef}>
@@ -178,7 +210,10 @@ function TodoList() {
                                         <div className="drag-indicator">
                                             &#8801;
                                         </div>
-                                        <span className="text">{task.name}</span>
+                                        {isEditing && task == editingTask ? 
+                                            <input type="text" value={editingTaskString} onChange={handleEditInputChange} onKeyDown={handleEditKeyDown} autoFocus/> :
+                                            <span className="text" onClick={ () => editName(task) }>{task.name}</span>
+                                        }
                                         <button 
                                             className="delete-button" 
                                             onClick={() => deleteTask(task)}>
