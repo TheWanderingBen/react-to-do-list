@@ -54,6 +54,14 @@ function TodoList() {
         setIsEditing(false);
     }
 
+    function handleAddKeyDown(event : React.KeyboardEvent<HTMLInputElement>) {
+        if (event.key === 'Enter') {
+            addTask();
+        } else if (event.key === 'Escape') {
+            setNewTask("");
+        }
+    }
+
     async function addTask() {
         setIsEditing(false);
         if (newTask.trim() !== "") {
@@ -72,8 +80,8 @@ function TodoList() {
                 changingTasks.push(addedTask);
             }
             orderAndSetTasks(changingTasks);
-            await updateDocsWithTasks(tasksToUpdate);
             setNewTask("");
+            await updateDocsWithTasks(tasksToUpdate);
             fetchAndSetTasks();
         }
     }
@@ -166,8 +174,10 @@ function TodoList() {
             orderAndSetTasks([...tasks]);
             await updateDocsWithTasks([editingTask as Task]);
             fetchAndSetTasks();
+        } else if (event.key === 'Escape') {
+            setIsEditing(false);
         }
-    };
+    }
 
     async function updateDocsWithTasks(tasksToUpdate: Task[]) {
         const batch = writeBatch(db);
@@ -185,18 +195,10 @@ function TodoList() {
 
     return(<div className="to-do-list">
         <h1>My Tasks</h1>
-        <div>
+        <div className="add-parent">
             <input
-                type="text"
-                placeholder="Enter a task..."
-                value={newTask}
-                onChange={handleInputChange}
+                type="text" placeholder="Enter a task..." value={newTask} onChange={handleInputChange} onKeyDown={handleAddKeyDown} 
             />
-            <button
-                className="add-button"
-                onClick={addTask}>
-                    Add
-            </button>``
         </div>``
         <DragDropContext onDragEnd={handleOnDragEnd} onDragStart={handleOnDragStart}>
             <Droppable droppableId="tasks">
